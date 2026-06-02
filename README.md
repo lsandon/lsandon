@@ -15,8 +15,6 @@ I am a Software Engineering student passionate about building software and under
 👯 I’m looking forward to collaborating on:
 
 * Open Source Projects
-* Backend Systems
-* Developer Tools
 * Security Research Projects
 
 ⚡ Outside of tech, I enjoy:
