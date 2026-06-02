@@ -4,7 +4,7 @@
 
 <img src="https://media.giphy.com/media/LmNwrBhejkK9EFP504/giphy.gif" width="30px">&nbsp;***About me***
 
-I am a Software Engineering student passionate about building software and understanding how it works behind the scenes. My interests include web development, software architecture, reverse engineering, security research, and C++ development. I enjoy creating web applications, building desktop tools with ImGui, and exploring system internals. I am always learning new technologies and challenging myself with projects that help me grow as an engineer.
+I am a Software Engineering student passionate about building software and understanding how it works behind the scenes. My interests include web development, software architecture, reverse engineering, security research, and C++ development. I enjoy creating web applications, building desktop tools with ImGui, and exploring system internals.
 
 🌱 I’m currently learning
 
