@@ -1,0 +1,13 @@
+{
+  "title": "Skill Radar",
+  "_comment": "Self-rated, 0-100. Edit these and the Charts workflow redraws the radar.",
+  "axes": [
+    { "label": "C++ / Systems",         "value": 85 },
+    { "label": "Reverse Engineering",   "value": 78 },
+    { "label": "Software Architecture", "value": 80 },
+    { "label": "Web Development",       "value": 82 },
+    { "label": "Java Development",      "value": 78 },
+    { "label": "Security Research",     "value": 72 },
+    { "label": "Python",                "value": 76 }
+  ]
+}

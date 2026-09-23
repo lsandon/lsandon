@@ -1,0 +1,9 @@
+{
+  "_comment": "Featured repos, in README order.",
+  "projects": [
+    {
+      "repo": "colombia-e14-downloader-verifier",
+      "description": "Downloader and verification tool for Colombian electoral E-14 forms and records."
+    }
+  ]
+}
