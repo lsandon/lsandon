@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the animated GitHub profile banners.
+"""Generate the animated GitHub profile banners for Luis Sandon.
 
 Run from the repository root:
     python scripts/banner/generate.py
@@ -18,7 +18,7 @@ from scipy.spatial.distance import cdist
 
 
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE = ROOT / "assets/source/mrr.png"
+SOURCE = ROOT / "assets/source/hacker_avatar.png"
 ASSETS = ROOT / "assets"
 LOGOS = Path(__file__).resolve().parent / "logos"
 DATA = Path(__file__).resolve().parent / "data"
@@ -30,21 +30,21 @@ TRAVELLER_COUNT = 900
 SEED = 314159
 
 ROWS = [
-    ("Subject", "Emmi"),
-    ("Role", "Blockchain Engineer · Tech Lead"),
-    ("Origin", "Bolivia"),
-    ("Education", "Community · LATAM"),
-    ("Status", "Building + Learning + Shipping"),
-    ("ToolChain", "Sublime · Cursor · Git"),
-    ("Core.Lang", "TypeScript · Rust · Solidity"),
-    ("Core.Frontend", "React · Next.js · Three.js · Tailwind"),
-    ("Core.Backend", "Node · Python"),
-    ("Core.Database", "Postgres · Supabase"),
-    ("Core.Infra", "Vercel · Docker · AWS"),
-    ("Grid.Mail", "—"),
-    ("Grid.LinkedIn", "/in/emmi-aguilar-rivero"),
-    ("Grid.GitHub", "emmi-lili"),
-    ("Grid.X", "@emmcriptada"),
+    ("Subject", "Luis Sandon"),
+    ("Role", "Software Engineering Student"),
+    ("Origin", "Colombia"),
+    ("Education", "Software Engineering"),
+    ("Status", "Building + Exploring + Reversing"),
+    ("ToolChain", "VS Code · Git · ImGui"),
+    ("Core.Lang", "C++ · Java · Python · JS"),
+    ("Core.Frontend", "HTML5 · CSS3 · JavaScript"),
+    ("Core.Backend", "Python · Java · C++"),
+    ("Core.Database", "MySQL · Databases"),
+    ("Core.Infra", "Git · Jira · Notion · Linux"),
+    ("Grid.Mail", "luissandon76@gmail.com"),
+    ("Grid.LinkedIn", "—"),
+    ("Grid.GitHub", "lsandon"),
+    ("Grid.Instagram", "@lfsandon"),
 ]
 
 THEMES = {
@@ -81,25 +81,18 @@ def make_logos() -> dict[str, Image.Image]:
     size = 400
     logos: dict[str, Image.Image] = {}
 
-    # Rust-inspired gear: twelve teeth, heavy annulus, and hub cutout.
-    rust = Image.new("RGBA", (size, size), (0, 0, 0, 0))
-    d = ImageDraw.Draw(rust)
-    center = np.array([200.0, 200.0])
-    outer: list[tuple[float, float]] = []
-    for tooth in range(12):
-        base = tooth * math.tau / 12
-        for offset, radius in [
-            (-0.42, 150), (-0.30, 178), (0.30, 178), (0.42, 150)
-        ]:
-            a = base + offset * math.tau / 12
-            outer.append(tuple(center + radius * np.array([math.cos(a), math.sin(a)])))
-    d.polygon(outer, fill="black")
-    d.ellipse((70, 70, 330, 330), fill="black")
-    d.ellipse((128, 128, 272, 272), fill=(0, 0, 0, 0))
-    d.ellipse((174, 174, 226, 226), fill="black")
-    logos["rust"] = rust
+    # C++ Logo: 'C' with double plus marks
+    cpp = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    d = ImageDraw.Draw(cpp)
+    stroke = 36
+    d.arc((60, 80, 260, 320), start=45, end=315, fill="black", width=stroke)
+    d.line([(265, 175), (295, 175)], fill="black", width=14)
+    d.line([(280, 160), (280, 190)], fill="black", width=14)
+    d.line([(315, 175), (345, 175)], fill="black", width=14)
+    d.line([(330, 160), (330, 190)], fill="black", width=14)
+    logos["cpp"] = cpp
 
-    # </> mark built from broad, rounded strokes.
+    # </> Code brackets mark
     code = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     d = ImageDraw.Draw(code)
     stroke = 42
@@ -108,21 +101,13 @@ def make_logos() -> dict[str, Image.Image]:
     d.line([(225, 72), (174, 328)], fill="black", width=stroke)
     logos["code"] = code
 
-    # Stellar-inspired four-point star with a small connected node network.
-    stellar = Image.new("RGBA", (size, size), (0, 0, 0, 0))
-    d = ImageDraw.Draw(stellar)
-    star: list[tuple[float, float]] = []
-    for i in range(16):
-        a = -math.pi / 2 + i * math.pi / 8
-        radius = 137 if i % 4 == 0 else (45 if i % 2 == 0 else 25)
-        star.append((200 + math.cos(a) * radius, 200 + math.sin(a) * radius))
-    d.polygon(star, fill="black")
-    nodes = [(82, 112), (322, 106), (326, 300), (88, 316)]
-    for a, b in zip(nodes, nodes[1:] + nodes[:1]):
-        d.line([a, b], fill="black", width=12)
-    for x, y in nodes:
-        d.ellipse((x - 19, y - 19, x + 19, y + 19), fill="black")
-    logos["stellar"] = stellar
+    # Terminal prompt >_
+    term = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    d = ImageDraw.Draw(term)
+    stroke = 38
+    d.line([(85, 110), (195, 200), (85, 290)], fill="black", width=stroke, joint="curve")
+    d.line([(220, 290), (325, 290)], fill="black", width=stroke)
+    logos["terminal"] = term
 
     for name, image in logos.items():
         image.save(LOGOS / f"{name}.png", optimize=True)
@@ -158,37 +143,18 @@ def floyd_steinberg(gray: np.ndarray) -> np.ndarray:
 def portrait_points(theme: str, rng: np.random.Generator) -> np.ndarray:
     """Return sampled x/y banner coordinates from a 300x340 dither grid."""
     source = Image.open(SOURCE).convert("RGBA")
-    # Tighter head + shoulders crop so face detail fills the VISUAL.MAP frame.
-    crop = source.crop((18, 28, 390, 450)).resize((300, 340), Image.Resampling.LANCZOS)
+    w, h = source.size
+    crop_w = int(h * 300 / 340)
+    left = max(0, (w - crop_w) // 2)
+    crop = source.crop((left, 0, left + crop_w, h)).resize((300, 340), Image.Resampling.LANCZOS)
     rgb = crop.convert("RGB")
-    alpha = np.asarray(crop.getchannel("A"), dtype=np.float32) / 255.0
+    gray = ImageOps.grayscale(rgb)
 
-    if theme == "dark":
-        lum = np.asarray(ImageOps.grayscale(rgb), dtype=np.float32)
-        prepared = Image.fromarray(np.uint8(np.clip(lum * alpha, 0, 255)), "L")
-        select_lit = True
-    else:
-        white = Image.new("RGBA", crop.size, "white")
-        white.alpha_composite(crop)
-        prepared = ImageOps.grayscale(white.convert("RGB"))
-        select_lit = False
+    prep = ImageEnhance.Contrast(gray).enhance(1.35)
+    prep = prep.filter(ImageFilter.UnsharpMask(radius=2, percent=175, threshold=1))
+    bits = floyd_steinberg(np.asarray(prep))
 
-    # Equalize against the subject only (ignore empty alpha) so lit skin vs dark
-    # hair doesn't crush midtones; then punch local contrast for facial edges.
-    if theme == "dark":
-        mask = Image.fromarray(np.uint8((alpha > 0.08) * 255), "L")
-        prepared = ImageOps.equalize(prepared, mask=mask)
-    else:
-        prepared = ImageOps.autocontrast(prepared, cutoff=1)
-    prepared = ImageEnhance.Contrast(prepared).enhance(1.35)
-    prepared = prepared.filter(ImageFilter.UnsharpMask(radius=2, percent=175, threshold=1))
-    bits = floyd_steinberg(np.asarray(prepared))
-    active = bits if select_lit else ~bits
-    if theme == "dark":
-        active &= alpha > 0.08
-
-    # Keep the full 300×340 lattice — skipping 2×2 cells was the soft/blurry look.
-    ys, xs = np.where(active)
+    ys, xs = np.where(bits)
     if len(xs) == 0:
         return np.zeros((0, 2), dtype=np.float32)
     points = np.column_stack((74 + xs, 154 + ys)).astype(np.float32)
@@ -204,7 +170,6 @@ def sample_logo_points(
     alpha = np.asarray(image.getchannel("A"))
     ys, xs = np.where(alpha > 127)
     chosen = rng.choice(len(xs), count, replace=len(xs) < count)
-    # Logo occupies a centered 270x270 square inside VISUAL.MAP.
     return np.column_stack((89 + xs[chosen] * 0.675, 188 + ys[chosen] * 0.675)).astype(
         np.float32
     )
@@ -248,7 +213,6 @@ def dotted_leader(x1: float, x2: float, y: float) -> str:
 
 
 def text_width(text: str, font_size: float) -> float:
-    """Stable monospace width used both for textLength and leader placement."""
     return len(text) * font_size * 0.605
 
 
@@ -265,26 +229,22 @@ def render_svg(
     t = THEMES[theme_name]
     n = min(TRAVELLER_COUNT, len(portrait))
     source = portrait[rng.choice(len(portrait), n, replace=False)]
-    rust = transport(source, logo_points["rust"][:n])
-    code = transport(rust, logo_points["code"][:n])
-    stellar = transport(code, logo_points["stellar"][:n])
+    cpp = transport(source, logo_points["cpp"][:n])
+    code = transport(cpp, logo_points["code"][:n])
+    term = transport(code, logo_points["terminal"][:n])
 
-    # Explicit uneven phase boundaries: 3.0 portrait, 2.0 per logo,
-    # and four 1.3 transitions = 14.2 seconds.
     times = [0, 3.0, 4.3, 6.3, 7.6, 9.6, 10.9, 12.9, 14.2]
     key_times = ";".join(num(v / LOOP_SECONDS) for v in times)
-    # Returning each traveller to its exact starting portrait coordinate keeps
-    # the repeat boundary seamless. All logo-to-logo morphs use optimal transport.
-    frames = [source, source, rust, rust, code, code, stellar, stellar, source]
+    frames = [source, source, cpp, cpp, code, code, term, term, source]
     opacity_values = "0;0;1;1;1;1;1;1;0"
 
     parts: list[str] = [
         '<svg xmlns="http://www.w3.org/2000/svg" '
         f'width="{W}" height="{H}" viewBox="0 0 {W} {H}" role="img" '
         'aria-labelledby="title desc">',
-        "<title id=\"title\">Emmi's live system profile</title>",
-        '<desc id="desc">Animated terminal profile with a dithered portrait and '
-        "Rust, code, and Stellar silhouettes.</desc>",
+        "<title id=\"title\">Luis Sandon's live system profile</title>",
+        '<desc id="desc">Animated terminal profile with a cybernetic hacker isotype, '
+        "C++, code, and terminal silhouettes.</desc>",
         "<defs>",
         '<filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">'
         f'<feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="{t["shadow"]}" '
@@ -299,13 +259,12 @@ def render_svg(
         f'<rect x="13" y="13" width="1154" height="584" rx="13" fill="{t["panel"]}" '
         f'stroke="{t["line"]}" filter="url(#shadow)"/>',
         f'<path d="M13 62H1167" stroke="{t["line"]}"/>',
-        '<circle cx="38" cy="38" r="6" fill="#FF5F57"/>'
-        '<circle cx="59" cy="38" r="6" fill="#FEBC2E"/>'
+        '<circle cx="38" cy="38" r="6" fill="#FF5F57"/>',
+        '<circle cx="59" cy="38" r="6" fill="#FEBC2E"/>',
         '<circle cx="80" cy="38" r="6" fill="#28C840"/>',
         f'<text x="590" y="43" text-anchor="middle" fill="{t["muted"]}" '
         'font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="13" '
         'letter-spacing=".4">profile.sh --live</text>',
-        # Left visual frame.
         f'<rect x="35" y="88" width="418" height="472" rx="6" fill="{t["panel2"]}" '
         f'stroke="{t["line"]}"/>',
         f'<path d="M35 124H453" stroke="{t["line"]}"/>',
@@ -313,39 +272,24 @@ def render_svg(
         'font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="13" '
         'font-weight="700" letter-spacing="1.2">VISUAL.MAP</text>',
         f'<text x="438" y="111" text-anchor="end" fill="{t["muted"]}" '
-        'font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="11">300×340 / 1-BIT</text>',
-        f'<path d="M49 141h12M49 141v12M439 141h-12M439 141v12M49 539h12M49 539v-12'
-        f'M439 539h-12M439 539v-12" fill="none" stroke="{t["chrome"]}" opacity=".55"/>',
+        'font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="11">'
+        "300×340 / 1-BIT</text>",
+        '<path d="M49 141h12M49 141v12M439 141h-12M439 141v12M49 539h12M49 539v-12M439 539h-12M439 539v-12" '
+        f'fill="none" stroke="{t["chrome"]}" opacity=".55"/>',
         '<g clip-path="url(#visualClip)" shape-rendering="crispEdges">',
-        # Loop layer stays visible at t=0 so camo/static first frames still show the face.
-        # Intro duplicate below shimmers on top, then hands off at 3.2s.
-        '<g opacity="1">',
     ]
 
-    # Dense portrait drift: 94 independently noisy bands moving toward Rust's centroid.
-    rust_centroid = rust.mean(axis=0)
-    band_ids = rng.integers(0, 94, size=len(portrait))
-    noise = rng.normal(0, 4, size=(94, 2))
-    for band in range(94):
-        pts = portrait[band_ids == band]
-        if not len(pts):
-            continue
-        centroid = pts.mean(axis=0)
-        delta = (rust_centroid - centroid) * 0.18 + noise[band]
-        d = point_path(pts)
-        parts.append(
-            f'<path d="{d}" fill="none" stroke="{t["portrait"]}" stroke-width="1" '
-            'opacity=".94">'
-            f'<animateTransform attributeName="transform" type="translate" begin="{INTRO_SECONDS}s" '
-            f'dur="{LOOP_SECONDS}s" repeatCount="indefinite" calcMode="linear" '
-            f'keyTimes="{key_times}" values="0 0;0 0;{num(delta[0])} {num(delta[1])};'
-            f'{num(delta[0])} {num(delta[1])};0 0;0 0;0 0;0 0;0 0"/>'
-            f'<animate attributeName="opacity" begin="{INTRO_SECONDS}s" dur="{LOOP_SECONDS}s" '
-            f'repeatCount="indefinite" keyTimes="{key_times}" '
-            'values=".94;.94;0;0;0;0;0;0;.94"/></path>'
-        )
+    # Static portrait path runs.
+    parts.append(
+        f'<path d="{point_path(portrait)}" fill="none" stroke="{t["portrait"]}" '
+        'stroke-width="1" opacity=".94">'
+        f'<animate attributeName="opacity" begin="{INTRO_SECONDS}s" dur="{LOOP_SECONDS}s" '
+        f'repeatCount="indefinite" calcMode="linear" keyTimes="{key_times}" '
+        'values=".94;.94;0;0;0;0;0;0;.94"/></path>'
+    )
 
-    # Optimal-transport travellers, represented as tiny path squares (never glyphs).
+    # 900 traveller particles.
+    parts.append('<g shape-rendering="crispEdges">')
     for i in range(n):
         positions = animate_values(frames, i)
         parts.append(
@@ -359,7 +303,7 @@ def render_svg(
         )
     parts.append("</g>")
 
-    # One-shot scattered intro: sixty random, interleaved point groups.
+    # One-shot scattered intro.
     intro_ids = rng.integers(0, 60, size=len(portrait))
     order = rng.permutation(60)
     starts = np.empty(60)
@@ -379,18 +323,15 @@ def render_svg(
     parts.extend(
         [
             "</g>",
-            # Small frame telemetry.
             f'<text x="58" y="551" fill="{t["muted"]}" '
             'font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="10">'
             f'PTS {len(portrait):05d} · FS/SERPENTINE</text>',
-            # Right information panel.
             f'<rect x="474" y="88" width="672" height="472" rx="6" fill="{t["panel2"]}" '
             f'stroke="{t["line"]}"/>',
             f'<path d="M474 124H1146" stroke="{t["line"]}"/>',
             f'<text x="490" y="111" fill="{t["chrome"]}" '
             'font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="13" '
             'font-weight="700" letter-spacing="1.2">SYSTEM.INFO</text>',
-            # LIVE badge and handle pill.
             '<g filter="url(#glow)"><circle cx="915" cy="106" r="4" fill="#FF4D5A">'
             '<animate attributeName="opacity" values="1;.3;1" dur="1.6s" repeatCount="indefinite"/>'
             '</circle></g>',
@@ -401,7 +342,7 @@ def render_svg(
             f'stroke="{t["chrome"]}"/>',
             f'<text x="1055" y="111" text-anchor="middle" fill="{t["chrome"]}" '
             'font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="14" '
-            'font-weight="700">@emmi-lili</text>',
+            'font-weight="700">@lsandon</text>',
         ]
     )
 
@@ -435,7 +376,7 @@ def render_svg(
             "● ALL SYSTEMS NOMINAL</text>",
             f'<text x="1128" y="548" text-anchor="end" fill="{t["muted"]}" '
             'font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="11">'
-            "UTC-4 · LATAM NODE</text>",
+            "UTC-5 · BOGOTA NODE</text>",
             "</svg>",
         ]
     )
@@ -449,7 +390,6 @@ def main() -> None:
     DATA.mkdir(parents=True, exist_ok=True)
     logos = make_logos()
 
-    # Cache theme-specific dither points as reproducible source data.
     portraits: dict[str, np.ndarray] = {}
     for index, theme in enumerate(THEMES):
         rng = np.random.default_rng(SEED + index)
